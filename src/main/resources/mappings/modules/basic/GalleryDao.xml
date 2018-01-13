@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.basic.dao.GalleryDao">
+    
+	<sql id="galleryColumns">
+		a.id AS "id",
+		a.cover_gallery AS "coverGallery",
+		a.title AS "title",
+		a.sort AS "sort",
+		a.gallery_category_id AS "galleryCategoryId",
+		a.vip_status AS "vipStatus",
+		a.hits AS "hits",
+		a.likes AS "likes",
+		a.comment_id AS "commentId",
+		a.praise AS "praise",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		g.category_name AS "galleryCategory"
+	</sql>
+	
+	<sql id="galleryJoins">
+		left join gallery_category g on g.id = a.gallery_category_id
+	</sql>
+    
+	<select id="get" resultType="Gallery">
+		SELECT 
+			<include refid="galleryColumns"/>
+		FROM gallery a
+		<include refid="galleryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Gallery">
+		SELECT
+			<include refid="galleryColumns"/>
+		FROM gallery a
+		<include refid="galleryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="galleryCategoryId != null and galleryCategoryId != ''">
+				AND g.category_name = #{galleryCategory}
+			</if>
+			<if test="vipStatus != null and vipStatus != ''">
+				AND a.vip_status = #{vipStatus}
+			</if>
+			<if test="beginInDate != null and endInDate != null and beginInDate != '' and endInDate != ''">
+				AND a.create_date BETWEEN #{beginInDate} AND #{endInDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Gallery">
+		SELECT 
+			<include refid="galleryColumns"/>
+		FROM gallery a
+		<include refid="galleryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gallery(
+			id,
+			cover_gallery,
+			title,
+			sort,
+			gallery_category_id,
+			vip_status,
+			hits,
+			likes,
+			comment_id,
+			praise
+		) VALUES (
+			#{id},
+			#{coverGallery},
+			#{title},
+			#{sort},
+			#{galleryCategoryId},
+			#{vipStatus},
+			#{hits},
+			#{likes},
+			#{commentId},
+			#{praise}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gallery SET 	
+			cover_gallery = #{coverGallery},
+			title = #{title},
+			sort = #{sort},
+			gallery_category_id = #{galleryCategoryId},
+			vip_status = #{vipStatus}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE gallery SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="getCommentsNum" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		FROM comments co
+		WHERE co.gallery_id = #{id}
+	</select>
+
+	<update id="updateHitsAddOne">
+		update gallery set
+		hits = hits+1
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

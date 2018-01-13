@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.basic.dao.CommentsDao">
+    
+	<sql id="commentsColumns">
+		a.id AS "id",
+		a.gallery_id AS "galleryId",
+		a.comments_content AS "commentsContent",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		u.user_id AS "userId",
+		u.name AS "userName"
+	</sql>
+	
+	<sql id="commentsJoins">
+		left join users u on u.user_id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="Comments">
+		SELECT 
+			<include refid="commentsColumns"/>
+		FROM comments a
+		<include refid="commentsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="Comments">
+		SELECT 
+			<include refid="commentsColumns"/>
+		FROM comments a
+		<include refid="commentsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="beginInDate != null and endInDate != null and beginInDate != '' and endInDate != ''">
+				AND a.create_date BETWEEN #{beginInDate} AND #{endInDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Comments">
+		SELECT 
+			<include refid="commentsColumns"/>
+		FROM comments a
+		<include refid="commentsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO comments(
+			id,
+			user_id,
+			gallery_id,
+			comments_content
+		) VALUES (
+			#{id},
+			#{userId},
+			#{galleryId},
+			#{commentsContent}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE comments SET 	
+			comments_content = #{commentsContent}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE comments SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

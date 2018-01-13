@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.basic.dao.ServicesDao">
+    
+	<sql id="servicesColumns">
+		a.id AS "id",
+		a.sort AS "sort",
+		a.service_content AS "serviceContent",
+		a.price AS "price",
+		a.service_time AS "serviceTime",
+		a.special AS "special",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="servicesJoins">
+	</sql>
+    
+	<select id="get" resultType="Services">
+		SELECT 
+			<include refid="servicesColumns"/>
+		FROM services a
+		<include refid="servicesJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Services">
+		SELECT 
+			<include refid="servicesColumns"/>
+		FROM services a
+		<include refid="servicesJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Services">
+		SELECT 
+			<include refid="servicesColumns"/>
+		FROM services a
+		<include refid="servicesJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO services(
+			id,
+			sort,
+			service_content,
+			price,
+			service_time,
+			special
+		) VALUES (
+			#{id},
+			#{sort},
+			#{serviceContent},
+			#{price},
+			#{serviceTime},
+			#{special}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE services SET 	
+			sort = #{sort},
+			service_content = #{serviceContent},
+			price = #{price},
+			service_time = #{serviceTime},
+			special = #{special}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE services SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

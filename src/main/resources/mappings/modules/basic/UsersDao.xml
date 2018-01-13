@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.basic.dao.UsersDao">
+    
+	<sql id="usersColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.address AS "address",
+		a.head_picture AS "headPicture",
+		a.grade AS "grade",
+		a.gossip AS "gossip",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="usersJoins">
+		LEFT JOIN sys_user u2 ON u2.id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="Users">
+		SELECT 
+			<include refid="usersColumns"/>
+		FROM users a
+		<include refid="usersJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="Users">
+		SELECT 
+			<include refid="usersColumns"/>
+		FROM users a
+		<include refid="usersJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="grade != null and grade != ''">
+				AND a.grade = #{grade}
+			</if>
+			<if test="gossip != null and gossip != ''">
+				AND a.gossip = #{gossip}
+			</if>
+			<if test="beginInDate != null and endInDate != null and beginInDate != '' and endInDate != ''">
+				AND a.create_date BETWEEN #{beginInDate} AND #{endInDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Users">
+		SELECT 
+			<include refid="usersColumns"/>
+		FROM users a
+		<include refid="usersJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO users(
+			id,
+			user_id,
+			name,
+			sex,
+			address,
+			head_picture,
+			grade,
+			gossip
+		) VALUES (
+			#{id},
+			#{userId},
+			#{name},
+			#{sex},
+			#{address},
+			#{headPicture},
+			#{grade},
+			#{gossip}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE users SET 	
+			user_id = #{userId},
+			name = #{name},
+			sex = #{sex},
+			address = #{address},
+			head_picture = #{headPicture},
+			grade = #{grade},
+			gossip = #{gossip}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE users SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

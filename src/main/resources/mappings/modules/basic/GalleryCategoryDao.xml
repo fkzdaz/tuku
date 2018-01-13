@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.basic.dao.GalleryCategoryDao">
+    
+	<sql id="galleryCategoryColumns">
+		a.id AS "id",
+		a.cover_img AS "coverImg",
+		a.category_name AS "categoryName",
+		a.description AS "description",
+		a.sort AS "sort",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="galleryCategoryJoins">
+	</sql>
+    
+	<select id="get" resultType="GalleryCategory">
+		SELECT 
+			<include refid="galleryCategoryColumns"/>
+		FROM gallery_category a
+		<include refid="galleryCategoryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GalleryCategory">
+		SELECT 
+			<include refid="galleryCategoryColumns"/>
+		FROM gallery_category a
+		<include refid="galleryCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY -a.sort DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GalleryCategory">
+		SELECT 
+			<include refid="galleryCategoryColumns"/>
+		FROM gallery_category a
+		<include refid="galleryCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY -a.sort DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gallery_category(
+			id,
+			cover_img,
+			category_name,
+			description,
+			sort
+		) VALUES (
+			#{id},
+			#{coverImg},
+			#{categoryName},
+			#{description},
+			#{sort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gallery_category SET 	
+			cover_img = #{coverImg},
+			category_name = #{categoryName},
+			description = #{description},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE gallery_category SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.basic.dao.OrdersDao">
+    
+	<sql id="ordersColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.order_num AS "orderNum",
+		a.service_id AS "serviceId",
+		a.payment_status AS "paymentStatus",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		u.user_id AS "usersId",
+		u.name AS "userName",
+		s.service_content AS "serviceContent",
+		s.price AS "price"
+	</sql>
+	
+	<sql id="ordersJoins">
+		left join users u on u.id = a.user_id
+		left join services s on s.id = a.service_id
+	</sql>
+    
+	<select id="get" resultType="Orders">
+		SELECT 
+			<include refid="ordersColumns"/>
+		FROM orders a
+		<include refid="ordersJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Orders">
+		SELECT 
+			<include refid="ordersColumns"/>
+		FROM orders a
+		<include refid="ordersJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="usersId != null and usersId != ''">
+				AND u.user_id = #{usersId}
+			</if>
+			<if test="serviceContent != null and serviceContent != ''">
+				AND s.service_content LIKE #{serviceContent}
+			</if>
+			<if test="paymentStatus != null and paymentStatus != ''">
+				AND a.payment_status = #{paymentStatus}
+			</if>
+			<if test="beginInDate != null and endInDate != null and beginInDate != '' and endInDate != ''">
+				AND a.create_date BETWEEN #{beginInDate} AND #{endInDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Orders">
+		SELECT 
+			<include refid="ordersColumns"/>
+		FROM orders a
+		<include refid="ordersJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO orders(
+			id,
+			user_id,
+			order_num,
+			service_id,
+			payment_status
+		) VALUES (
+			#{id},
+			#{userId},
+			#{orderNum},
+			#{serviceId},
+			#{paymentStatus}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE orders SET 	
+			user_id = #{userId},
+			order_num = #{orderNum},
+			service_id = #{serviceId},
+			payment_status = #{paymentStatus}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE orders SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>
